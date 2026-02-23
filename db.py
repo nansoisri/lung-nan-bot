@@ -1,4 +1,5 @@
 import sqlite3
+import json
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -19,6 +20,18 @@ def init_db() -> None:
                 category TEXT,
                 note TEXT,
                 created_at TEXT NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS custom_categories (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id TEXT NOT NULL,
+                name TEXT NOT NULL,
+                keywords_json TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                UNIQUE(user_id, name)
             )
             """
         )
@@ -45,6 +58,79 @@ def add_transaction(user_id: str, txn_type: str, amount: float, category: str, n
             (user_id, txn_type, amount, category, note, now),
         )
         conn.commit()
+
+
+def add_or_update_custom_category(user_id: str, name: str, keywords: list[str]) -> bool:
+    now = datetime.now().isoformat(timespec="seconds")
+    keywords_json = json.dumps(keywords, ensure_ascii=False)
+    with get_conn() as conn:
+        existing = conn.execute(
+            """
+            SELECT id FROM custom_categories
+            WHERE user_id = ? AND name = ?
+            """,
+            (user_id, name),
+        ).fetchone()
+        if existing:
+            conn.execute(
+                """
+                UPDATE custom_categories
+                SET keywords_json = ?, created_at = ?
+                WHERE user_id = ? AND name = ?
+                """,
+                (keywords_json, now, user_id, name),
+            )
+            conn.commit()
+            return False
+
+        conn.execute(
+            """
+            INSERT INTO custom_categories (user_id, name, keywords_json, created_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            (user_id, name, keywords_json, now),
+        )
+        conn.commit()
+        return True
+
+
+def delete_custom_category(user_id: str, name: str) -> bool:
+    with get_conn() as conn:
+        cur = conn.execute(
+            """
+            DELETE FROM custom_categories
+            WHERE user_id = ? AND name = ?
+            """,
+            (user_id, name),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+
+def list_custom_categories(user_id: str) -> list[tuple[str, list[str]]]:
+    with get_conn() as conn:
+        rows = conn.execute(
+            """
+            SELECT name, keywords_json
+            FROM custom_categories
+            WHERE user_id = ?
+            ORDER BY name ASC
+            """,
+            (user_id,),
+        ).fetchall()
+
+    result: list[tuple[str, list[str]]] = []
+    for name, keywords_json in rows:
+        try:
+            keywords = json.loads(keywords_json)
+            if not isinstance(keywords, list):
+                keywords = []
+        except (TypeError, json.JSONDecodeError):
+            keywords = []
+
+        keywords = [str(keyword).strip() for keyword in keywords if str(keyword).strip()]
+        result.append((str(name), keywords))
+    return result
 
 
 def summary_range(user_id: str, start_date: str, end_date: str) -> tuple[float, float, float]:
