@@ -60,6 +60,19 @@ Server จะรันที่ `http://localhost:8000`
 
 > ทดสอบ local สามารถใช้ ngrok เช่น `ngrok http 8000` แล้วนำ HTTPS URL ไปใส่ webhook
 
+## Deploy บน Render
+1. Push โค้ดไป GitHub
+2. ใน Render เลือก `New +` -> `Blueprint` แล้วเลือก repo นี้ (ใช้ `render.yaml`)
+3. ตั้งค่า Environment Variables ใน Render:
+   - `LINE_CHANNEL_SECRET`
+   - `LINE_CHANNEL_ACCESS_TOKEN`
+4. Deploy แล้วนำโดเมนที่ได้ไปตั้ง LINE Webhook URL:
+   - `https://<your-render-domain>/webhook`
+
+หมายเหตุ:
+- โปรเจกต์นี้ตั้ง `startCommand` เป็น `gunicorn app:app`
+- ใช้ `BUDGET_DB_PATH=/var/data/budget.db` และมี disk mount ที่ `/var/data` เพื่อเก็บ SQLite ถาวร
+
 ## โครงสร้างไฟล์
 - `app.py` จัดการ webhook และตอบกลับ LINE
 - `parser.py` แยกประเภทรายรับ/รายจ่าย + ดึงจำนวนเงิน

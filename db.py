@@ -1,14 +1,17 @@
 import sqlite3
 import json
+import os
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from typing import Generator
 
-DB_PATH = Path(__file__).resolve().parent / "budget.db"
+DEFAULT_DB_PATH = Path(__file__).resolve().parent / "budget.db"
+DB_PATH = Path(os.getenv("BUDGET_DB_PATH", str(DEFAULT_DB_PATH))).expanduser()
 
 
 def init_db() -> None:
+    DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(DB_PATH) as conn:
         conn.execute(
             """
