@@ -71,7 +71,8 @@ Server จะรันที่ `http://localhost:8000`
 
 หมายเหตุ:
 - โปรเจกต์นี้ตั้ง `startCommand` เป็น `gunicorn app:app`
-- ใช้ `BUDGET_DB_PATH=/var/data/budget.db` และมี disk mount ที่ `/var/data` เพื่อเก็บ SQLite ถาวร
+- บน Render Free ใช้ `BUDGET_DB_PATH=/opt/render/project/src/budget.db` (ข้อมูลไม่ถาวรถ้า instance รีสตาร์ท)
+- ถ้าต้องการข้อมูลถาวร ให้ย้ายไป PostgreSQL หรืออัปเกรดแผนที่รองรับ disk
 
 ## โครงสร้างไฟล์
 - `app.py` จัดการ webhook และตอบกลับ LINE
