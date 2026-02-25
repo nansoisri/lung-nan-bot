@@ -60,6 +60,29 @@ Server จะรันที่ `http://localhost:8000`
 
 > ทดสอบ local สามารถใช้ ngrok เช่น `ngrok http 8000` แล้วนำ HTTPS URL ไปใส่ webhook
 
+## ตั้งค่า Rich Menu (กดแทนการพิมพ์)
+Rich Menu นี้มี 3 ปุ่ม:
+- `สรุปวันนี้`
+- `สรุปเดือนนี้`
+- `สุขภาพการเงินของฉัน`
+
+ขั้นตอน:
+1. เตรียมรูปเมนูขนาด `2500x843` เป็นไฟล์ `assets/richmenu.png`
+   - ดูสเปกที่ `assets/richmenu-spec.md`
+2. รันสคริปต์สร้าง/ตั้งค่าเมนู:
+```bash
+python scripts/setup_rich_menu.py
+```
+หรือระบุพาธรูปเอง:
+```bash
+python scripts/setup_rich_menu.py /path/to/richmenu.png
+```
+
+สคริปต์จะทำให้:
+- สร้าง Rich Menu ใหม่
+- อัปโหลดรูป
+- ตั้งเป็น default rich menu ของ Official Account
+
 ## Deploy บน Render
 1. Push โค้ดไป GitHub
 2. ใน Render เลือก `New +` -> `Blueprint` แล้วเลือก repo นี้ (ใช้ `render.yaml`)
